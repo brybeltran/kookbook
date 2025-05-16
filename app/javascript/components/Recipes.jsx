@@ -1,104 +1,77 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
-const Recipe = () => {
-  const params = useParams();
+const Recipes = () => {
   const navigate = useNavigate();
-  const [recipe, setRecipe] = useState({ ingredients: [] });
+  const [recipes, setRecipes] = useState([]);
 
   useEffect(() => {
-    const url = `/api/v1/recipes/${params.id}`;
+    const url = "/api/v1/recipes";
     fetch(url)
-      .then((response) => {
-        if (response.ok) {
-          return response.json();
+      .then((res) => {
+        if (res.ok) {
+          return res.json();
         }
         throw new Error("Network response was not ok.");
       })
-      .then((response) => setRecipe(response))
-      .catch(() => navigate("/recipes"));
-  }, [params.id]);
+      .then((res) => setRecipes(res))
+      .catch(() => navigate("/"));
+  }, []);
 
-  const addHtmlEntities = (str) =>
-    String(str).replace(/&lt;/g, "<").replace(/&gt;/g, ">");
-
-  const deleteRecipe = () => {
-    const url = `/api/v1/recipes/${params.id}`;
-    const token = document.querySelector('meta[name="csrf-token"]').content;
-
-    fetch(url, {
-      method: "DELETE",
-      headers: {
-        "X-CSRF-Token": token,
-        "Content-Type": "application/json",
-      },
-    })
-      .then((response) => {
-        if (response.ok) {
-          navigate("/recipes");
-        } else {
-          throw new Error("Delete failed.");
-        }
-      })
-      .catch((error) => console.error(error));
-  };
-
-  const ingredientList = () =>
-    recipe.ingredients.length > 0
-      ? recipe.ingredients.map((ingredient) => (
-          <li key={ingredient.id} className="list-group-item">
-            {ingredient.name}
-          </li>
-        ))
-      : "No ingredients available";
-
-  const recipeInstruction = addHtmlEntities(recipe.instruction);
-
-  return (
-    <div className="">
-      <div className="hero position-relative d-flex align-items-center justify-content-center">
+  const allRecipes = recipes.map((recipe, index) => (
+    <div key={index} className="col-md-6 col-lg-4">
+      <div className="card mb-4">
         <img
           src={recipe.image}
+          className="card-img-top"
           alt={`${recipe.name} image`}
-          className="img-fluid position-absolute"
         />
-        <div className="overlay bg-dark position-absolute" />
-        <h1 className="display-4 position-relative text-white">
-          {recipe.name}
-        </h1>
-      </div>
-      <div className="container py-5">
-        <div className="row">
-          <div className="col-sm-12 col-lg-3">
-            <ul className="list-group">
-              <h5 className="mb-2">Ingredients</h5>
-              {ingredientList()}
-            </ul>
-          </div>
-          <div className="col-sm-12 col-lg-7">
-            <h5 className="mb-2">Preparation Instructions</h5>
-            <div
-              dangerouslySetInnerHTML={{
-                __html: `${recipeInstruction}`,
-              }}
-            />
-          </div>
-          <div className="col-sm-12 col-lg-2">
-            <button
-              type="button"
-              className="btn btn-danger"
-              onClick={deleteRecipe}
-            >
-              Delete Recipe
-            </button>
-          </div>
+        <div className="card-body">
+          <h5 className="card-title">{recipe.name}</h5>
+          <Link to={`/recipes/${recipe.id}`} className="btn custom-button">
+            View Recipe
+          </Link>
         </div>
-        <Link to="/recipes" className="btn btn-link">
-          Back to recipes
-        </Link>
       </div>
     </div>
+  ));
+  const noRecipe = (
+    <div className="vw-100 vh-50 d-flex align-items-center justify-content-center">
+      <h4>
+        No recipes yet. Why not <Link to="/new_recipe">create one</Link>
+      </h4>
+    </div>
+  );
+
+  return (
+    <>
+      <section className="jumbotron jumbotron-fluid text-center">
+        <div className="container py-5">
+          <h1 className="display-4">Recipes for every occasion</h1>
+          <p className="lead text-muted">
+            We’ve pulled together our most popular recipes, our latest
+            additions, and our editor’s picks, so there’s sure to be something
+            tempting for you to try.
+          </p>
+        </div>
+      </section>
+      <div className="py-5">
+        <main className="container">
+          <div className="text-end mb-3">
+            <Link to="/recipe" className="btn custom-button">
+              Create New Recipe
+            </Link>
+          </div>
+          <div className="row">
+            {recipes.length > 0 ? allRecipes : noRecipe}
+          </div>
+          <Link to="/" className="btn btn-link">
+            Home
+          </Link>
+        </main>
+      </div>
+    </>
   );
 };
 
-export default Recipe;
+export default Recipes;

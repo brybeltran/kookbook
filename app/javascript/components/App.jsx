@@ -1,6 +1,6 @@
 import React from "react";
 import Routes from "../routes";
 
-const App = () => <AppRoutes />;
+const App = () => <Routes />;
 
 export default App;
